@@ -384,5 +384,5 @@ For questions or issues, contact the development team.
 
 ---
 
-**Built for Guerlilla Com**
+**Built for Guerilla Com**
 

@@ -45,12 +45,12 @@ export function Game() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 p-4 md:p-8">
+    <div className="min-h-screen bg-linear-to-br from-purple-600 via-pink-500 to-red-500 p-4 md:p-8">
       {/* Header */}
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white drop-shadow-2xl">
+            <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-2xl">
               🎡 Spin & Win!
             </h1>
             <p className="text-white/90 text-lg mt-2">Try your luck and win amazing prizes!</p>
@@ -70,7 +70,7 @@ export function Game() {
             <p className="text-gray-600 mb-6">Please add products in the admin panel to start playing!</p>
             <Link 
               to="/admin"
-              className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
+              className="inline-block bg-linear-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
             >
               Go to Admin Panel
             </Link>
@@ -82,7 +82,7 @@ export function Game() {
             <p className="text-gray-600 mb-6">All prizes have been claimed. Please check back later or contact admin to reset quantities.</p>
             <Link 
               to="/admin"
-              className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
+              className="inline-block bg-linear-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
             >
               Go to Admin Panel
             </Link>
@@ -164,11 +164,11 @@ export function Game() {
               onClick={handleSpin}
               disabled={spinning || activeProducts.filter(p => p.remaining > 0).length === 0}
               className={`
-                relative px-16 py-6 text-2xl font-bold rounded-full shadow-2xl
+                relative px-10 py-4 text-xl font-bold rounded-full shadow-2xl
                 transition-all duration-300 transform
                 ${spinning || activeProducts.filter(p => p.remaining > 0).length === 0
                   ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:scale-110 hover:shadow-3xl cursor-pointer animate-pulse'
+                  : 'bg-linear-to-r from-yellow-400 via-orange-500 to-red-500 hover:scale-110 hover:shadow-3xl cursor-pointer animate-pulse'
                 }
                 text-white uppercase tracking-wider
               `}
@@ -199,7 +199,7 @@ export function Game() {
       {/* Try Again Modal */}
       {showTryAgain && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-          <div className="bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-3xl p-8 md:p-12 max-w-lg w-full shadow-2xl transform animate-in zoom-in duration-500">
+          <div className="bg-linear-to-br from-orange-500 via-red-500 to-pink-500 rounded-3xl p-8 md:p-12 max-w-lg w-full shadow-2xl transform animate-in zoom-in duration-500">
             <div className="text-center">
               <div className="text-7xl mb-4">😅</div>
               <h2 className="text-5xl font-extrabold text-white mb-4 drop-shadow-lg">
@@ -222,7 +222,7 @@ export function Game() {
       {/* Winner Modal */}
       {winner && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-          <div className="bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 md:p-12 max-w-lg w-full shadow-2xl transform animate-in zoom-in duration-500 relative overflow-hidden">
+          <div className="bg-linear-to-br from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-8 md:p-12 max-w-lg w-full shadow-2xl transform animate-in zoom-in duration-500 relative overflow-hidden">
             {/* Confetti Effect */}
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute top-0 left-1/4 w-2 h-2 bg-white rounded-full animate-ping"></div>
@@ -231,8 +231,8 @@ export function Game() {
             </div>
             
             <div className="relative text-center">
-              <div className="text-7xl mb-4 animate-bounce">🎉</div>
-              <h2 className="text-5xl font-extrabold text-white mb-4 drop-shadow-lg">
+              <div className="text-5xl mb-4 animate-bounce">🎉</div>
+              <h2 className="text-4xl font-extrabold text-white mb-4 drop-shadow-lg">
                 CONGRATULATIONS!
               </h2>
               <div className="bg-white rounded-2xl p-6 my-6 shadow-xl">
