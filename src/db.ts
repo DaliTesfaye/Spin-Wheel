@@ -15,6 +15,49 @@ export class SpinWheelDB extends Dexie {
       logs: '++id, productId, date',
       settings: 'key'
     });
+    
+    // Upgrade to version 2 to add probability field
+    this.version(2).stores({
+      products: '++id, name, active, remaining, probability',
+      logs: '++id, productId, date',
+      settings: 'key'
+    }).upgrade(tx => {
+      // Set default probability to existing products
+      return tx.table('products').toCollection().modify(product => {
+        if (!product.probability) {
+          product.probability = 12.5; // Default equal probability for 8 slots
+        }
+      });
+    });
+    
+    // Upgrade to version 3 to add uniqueKey field
+    this.version(3).stores({
+      products: '++id, uniqueKey, name, active, remaining, probability',
+      logs: '++id, productId, date',
+      settings: 'key'
+    }).upgrade(tx => {
+      // Generate uniqueKey for existing products based on name and index
+      return tx.table('products').toCollection().modify((product, cursor) => {
+        if (!product.uniqueKey) {
+          const index = cursor.key;
+          product.uniqueKey = `product-${index}`;
+        }
+      });
+    });
+    
+    // Upgrade to version 4 to add displayCount field
+    this.version(4).stores({
+      products: '++id, uniqueKey, name, active, remaining, probability, displayCount',
+      logs: '++id, productId, date',
+      settings: 'key'
+    }).upgrade(tx => {
+      // Set default displayCount to 1 for existing products
+      return tx.table('products').toCollection().modify(product => {
+        if (!product.displayCount) {
+          product.displayCount = 1;
+        }
+      });
+    });
   }
 }
 
@@ -23,32 +66,51 @@ export const db = new SpinWheelDB();
 // Initialize database with predefined products (smart sync with auto-update)
 export async function initializeProducts() {
   const existingProducts = await db.products.toArray();
-  const existingByName = new Map(existingProducts.map(p => [p.name, p]));
+  
+  // Filter out products without uniqueKey (old schema) and create map
+  const existingByKey = new Map(
+    existingProducts
+      .filter(p => p.uniqueKey) // Only include products with uniqueKey
+      .map(p => [p.uniqueKey, p])
+  );
   
   const newProducts = [];
   const updatedProducts = [];
   
   for (const codeProduct of INITIAL_PRODUCTS) {
-    const existingProduct = existingByName.get(codeProduct.name);
+    const existingProduct = existingByKey.get(codeProduct.uniqueKey);
     
     if (!existingProduct) {
       // Product doesn't exist - add it
       newProducts.push(codeProduct);
     } else {
-      // Product exists - check if image or active status changed
+      // Product exists - check if any field changed
       const needsUpdate = 
+        existingProduct.name !== codeProduct.name ||
         existingProduct.image !== codeProduct.image ||
-        existingProduct.active !== codeProduct.active;
+        existingProduct.active !== codeProduct.active ||
+        existingProduct.probability !== codeProduct.probability;
       
       if (needsUpdate) {
-        // Update only image and active status (preserve remaining quantity)
+        // Update fields (preserve remaining quantity)
         await db.products.update(existingProduct.id!, {
+          name: codeProduct.name,
           image: codeProduct.image,
-          active: codeProduct.active
+          active: codeProduct.active,
+          probability: codeProduct.probability
         });
-        updatedProducts.push(codeProduct.name);
+        updatedProducts.push(codeProduct.uniqueKey);
       }
     }
+  }
+  
+  // Delete old products without uniqueKey (from old schema)
+  const productsToDelete = existingProducts.filter(p => !p.uniqueKey);
+  if (productsToDelete.length > 0) {
+    for (const product of productsToDelete) {
+      await db.products.delete(product.id!);
+    }
+    console.log('🗑️ Removed', productsToDelete.length, 'old product(s) without uniqueKey');
   }
   
   // Add new products
@@ -62,7 +124,7 @@ export async function initializeProducts() {
     console.log('🔄 Updated', updatedProducts.length, 'product(s):', updatedProducts.join(', '));
   }
   
-  if (newProducts.length === 0 && updatedProducts.length === 0) {
+  if (newProducts.length === 0 && updatedProducts.length === 0 && productsToDelete.length === 0) {
     if (existingProducts.length === 0) {
       // First time - add all products
       await db.products.bulkAdd(INITIAL_PRODUCTS);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { spinWheel, getAllActiveProducts } from '../spin';
+import { getAllActiveProducts } from '../spin';
 import type { Product } from '../types';
 
 export function Game() {
@@ -9,6 +9,7 @@ export function Game() {
   const [showTryAgain, setShowTryAgain] = useState(false);
   const [activeProducts, setActiveProducts] = useState<Product[]>([]);
   const [rotation, setRotation] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -26,34 +27,90 @@ export function Game() {
     setWinner(null);
     setShowTryAgain(false);
 
-    // Random rotation between 1440 and 2160 degrees (4-6 full spins)
-    const randomRotation = 1440 + Math.random() * 720;
-    setRotation(rotation + randomRotation);
+    // STEP 1: Select winner index directly from activeProducts (single source of truth)
+    const availableProducts = activeProducts.filter(p => p.remaining > 0);
+    if (availableProducts.length === 0) return;
+    
+    // Random selection from available products
+    const randomProduct = availableProducts[Math.floor(Math.random() * availableProducts.length)];
+    
+    // STEP 2: Find the winner's position in the wheel (activeProducts array)
+    const winnerIndex = activeProducts.findIndex(p => p.uniqueKey === randomProduct.uniqueKey);
+    
+    // STEP 3: Calculate the exact rotation to land on the winner
+    const segmentAngle = 360 / activeProducts.length;
+    // Product position in the wheel (with -112.5° offset)
+    const productAngle = winnerIndex * segmentAngle + segmentAngle / 2 - 112.5;
+    // Normalize to 0-360
+    const normalizedProductAngle = ((productAngle % 360) + 360) % 360;
+    
+    // Get current wheel position (normalized to 0-360)
+    const normalizedCurrentRotation = ((rotation % 360) + 360) % 360;
+    
+    // Calculate where product currently is after current rotation
+    const currentProductPosition = (normalizedProductAngle + normalizedCurrentRotation) % 360;
+    
+    // Pointer is at 270° - calculate how much to rotate from current position
+    const minSpins = 8;
+    const spinDegrees = minSpins * 360;
+    
+    // Calculate needed rotation to get from current product position to 270°
+    let neededRotation = ((270 - currentProductPosition) + 360) % 360;
+    // If neededRotation is 0, add a full spin so it never looks like a crawl
+    if (neededRotation === 0) neededRotation = 360;
+    
+    // Always add minimum spins
+    const totalRotation = spinDegrees + neededRotation;
+    
+    // Disable transition, reset position to normalized current
+    setIsTransitioning(false);
+    setRotation(normalizedCurrentRotation);
+    
+    // Animate to target rotation after a short delay (forces full spin every time)
+    setTimeout(() => {
+      setIsTransitioning(true);
+      setRotation(normalizedCurrentRotation + totalRotation);
+    }, 50);
+    
+    const finalProductPosition = (currentProductPosition + totalRotation) % 360;
+    console.log('🎯 WIN INDEX:', winnerIndex, '|', randomProduct.name, '| Product start angle:', normalizedProductAngle.toFixed(1) + '°', '| Current wheel:', normalizedCurrentRotation.toFixed(1) + '°', '| Current product pos:', currentProductPosition.toFixed(1) + '°', '| Rotating by:', totalRotation.toFixed(1) + '°', '| Final product pos:', finalProductPosition.toFixed(1) + '° (should be 270°)');
 
-    // Simulate spin animation delay
+    // STEP 4: Update database and show result after animation completes
     setTimeout(async () => {
-      const result = await spinWheel();
-      if (result === null) {
-        // Landed on finished product
-        setShowTryAgain(true);
+      const isTryAgain = randomProduct.name.includes('Prochaine');
+      
+      if (!isTryAgain) {
+        // Decrement product quantity in database
+        const { db } = await import('../db');
+        if (randomProduct.id) {
+          await db.products.update(randomProduct.id, {
+            remaining: Math.max(0, randomProduct.remaining - 1)
+          });
+          
+          // Log the win to history
+          await db.logs.add({
+            productId: randomProduct.id,
+            productName: randomProduct.name,
+            date: new Date()
+          });
+        }
+        setWinner(randomProduct);
       } else {
-        setWinner(result);
+        setShowTryAgain(true);
       }
+      
       setSpinning(false);
       await loadProducts();
     }, 3000);
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-600 via-pink-500 to-red-500 p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8 bg-cover bg-center bg-no-repeat bg-fixed" style={{ backgroundImage: "url('/MAGNET_JADIDA.png')" }}>
       {/* Header */}
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-2xl">
-              🎡 Spin & Win!
-            </h1>
-            <p className="text-white/90 text-lg mt-2">Try your luck and win amazing prizes!</p>
+
           </div>
           <Link 
             to="/admin" 
@@ -93,105 +150,184 @@ export function Game() {
             <div className="relative mb-12">
               {/* Pointer */}
               <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-20">
-                <div className="w-0 h-0 border-l-[30px] border-r-[30px] border-t-[50px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-xl animate-bounce"></div>
+                <div className="w-0 h-0 border-l-30 border-r-30 border-t-50 border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-xl animate-bounce"></div>
               </div>
               
               {/* Wheel */}
-              <div className="relative w-[400px] h-[400px] md:w-[500px] md:h-[500px]">
-                <div 
-                  className="w-full h-full rounded-full border-8 border-white shadow-2xl transition-transform duration-[3000ms] ease-out relative overflow-hidden"
-                  style={{ 
-                    transform: `rotate(${rotation}deg)`,
-                    background: `conic-gradient(${activeProducts.map((_, i) => {
-                      const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#F9CA24', '#6C5CE7', '#FD79A8', '#FDCB6E', '#00B894'];
-                      const color = colors[i % colors.length];
-                      const start = (i / activeProducts.length) * 100;
-                      const end = ((i + 1) / activeProducts.length) * 100;
-                      return `${color} ${start}%, ${color} ${end}%`;
-                    }).join(', ')})`
-                  }}
-                >
-                  {/* Center Circle */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-24 h-24 bg-white rounded-full shadow-xl flex items-center justify-center border-4 border-yellow-400">
-                      <span className="text-3xl">🎁</span>
-                    </div>
-                  </div>
+              <div className="relative w-100 h-100 md:w-125 md:h-125">
+                {/* Yellow outer border */}
+                <div className="absolute inset-0 rounded-full bg-yellow-400 shadow-2xl p-3">
+                  {/* Red border */}
+                  <div className="w-full h-full rounded-full bg-[#FF3B3B] p-3">
+                    {/* White thin inner border */}
+                    <div className="w-full h-full rounded-full bg-white p-0.5">
+                      <div 
+                        className={`w-full h-full rounded-full shadow-inner relative pointer-events-none ${isTransitioning ? 'transition-transform duration-3000 ease-out' : ''}`}
+                        style={{ 
+                          transform: `rotate(${rotation}deg)`,
+                          background: activeProducts.length > 0 ? `conic-gradient(from -112.5deg, ${activeProducts.map((_, i) => {
+                            const color = i % 2 === 0 ? '#FFD700' : '#FF3B3B';
+                            const segmentAngle = 360 / activeProducts.length;
+                            const startAngle = i * segmentAngle;
+                            const endAngle = (i + 1) * segmentAngle;
+                            return `${color} ${startAngle}deg, ${color} ${endAngle}deg`;
+                          }).join(', ')})` : '#FFD700'
+                        }}
+                      >
+                        {/* White divider lines between segments */}
+                        {activeProducts.map((_, index) => {
+                          const angle = (360 / activeProducts.length) * index - 112.5;
+                          return (
+                            <div
+                              key={`divider-${index}`}
+                              className="absolute top-1/2 left-1/2 w-0.75 h-1/2 bg-white origin-top"
+                              style={{
+                                transform: `translateX(-50%) rotate(${angle}deg)`,
+                              }}
+                            />
+                          );
+                        })}
+
+                        {/* Center Circle - Spin Button */}
+                        <div className="absolute inset-0 flex items-center justify-center z-50">
+                          <button
+                            onClick={handleSpin}
+                            disabled={spinning || activeProducts.filter(p => p.remaining > 0).length === 0}
+                            className="pointer-events-auto"
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              padding: 0,
+                              cursor: spinning || activeProducts.filter(p => p.remaining > 0).length === 0 ? 'not-allowed' : 'pointer',
+                              opacity: spinning || activeProducts.filter(p => p.remaining > 0).length === 0 ? 0.6 : 1,
+                              outline: 'none',
+                              boxShadow: 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                width: 80,
+                                height: 80,
+                                position: 'relative',
+                                transform: `rotate(${-rotation}deg)`,
+                              }}
+                            >
+                              {/* Small background design */}
+                              <img
+                                src="/2.png"
+                                alt="Spin background"
+                                style={{
+                                  width: 80,
+                                  height: 80,
+                                  objectFit: 'contain',
+                                  position: 'absolute',
+                                  left: 0,
+                                  top: 0,
+                                  zIndex: 1,
+                                  pointerEvents: 'none',
+                                }}
+                              />
+                              {/* Jadida logo perfectly centered */}
+                              <img
+                                src="/jadida.png"
+                                alt="Spin"
+                                style={{
+                                  width: 44,
+                                  height: 24,
+                                  objectFit: 'contain',
+                                  zIndex: 2,
+                                  position: 'absolute',
+                                  left: '50%',
+                                  top: '50%',
+                                  transform: 'translate(-50%, -50%)',
+                                  pointerEvents: 'none',
+                                  opacity: spinning ? 0.5 : 1,
+                                }}
+                              />
+                            </span>
+                          </button>
+                        </div>
                   
                   {/* Product Labels */}
                   {activeProducts.map((product, index) => {
-                    const angle = (360 / activeProducts.length) * index;
+                    const segmentAngle = 360 / activeProducts.length;
+                    const angle = (segmentAngle * index) - 112.5;
                     const isFinished = product.remaining === 0;
+                    const isEmptySlot = product.name.startsWith('❌');
+                    
+                    // Determine segment color for text contrast
+                    const isYellowSegment = index % 2 === 0;
+                    const textColor = isYellowSegment ? '#DC2626' : '#FFD700'; // Red text on yellow, yellow text on red
+                    
+                    // Calculate responsive distance and size based on wheel size and number of products
+                    const wheelRadius = window.innerWidth >= 768 ? 250 : 200;
+                    const distanceFromCenter = wheelRadius * 0.3;
+                    
+                    // Scale based on product count
+                    const productCount = activeProducts.length;
+                    const imageSize = productCount > 6 ? 'w-10 h-10' : productCount > 4 ? 'w-12 h-12' : 'w-14 h-14';
+                    const fontSize = productCount > 6 ? 'text-[13px]' : productCount > 4 ? 'text-[14px]' : 'text-[16px]';
+                    
                     return (
                       <div
                         key={product.id}
-                        className="absolute top-1/2 left-1/2 origin-left"
+                        className="absolute top-1/2 left-1/2"
                         style={{
-                          transform: `rotate(${angle + 90}deg) translateY(-50%)`,
-                          width: '50%',
+                          transform: `rotate(${angle + segmentAngle / 2}deg)`,
+                          transformOrigin: '0 0',
                         }}
                       >
-                        <div className="flex flex-col items-center ml-4 relative">
-                          <div className="relative">
+                        <div 
+                          className="flex flex-row items-center gap-2"
+                          style={{
+                            transform: `translateX(${distanceFromCenter}px) translateY(-50%)`,
+                            width: '120px',
+                          }}
+                        >
+                          <div className={`relative ${imageSize} shrink-0 overflow-hidden rounded bg-transparent`}>
                             <img 
                               src={product.image} 
                               alt={product.name}
-                              className={`w-12 h-12 object-contain bg-white/90 rounded-lg p-1 shadow-md ${
+                              className={`w-full h-full object-contain ${
                                 isFinished ? 'opacity-40 grayscale' : ''
                               }`}
                             />
-                            {isFinished && (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-2xl">🔒</span>
+                            {isFinished && !isEmptySlot && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded">
+                                <span className="text-sm">🔒</span>
                               </div>
                             )}
                           </div>
-                          <span className={`text-xs font-bold text-white mt-1 drop-shadow-lg px-2 py-1 rounded ${
-                            isFinished ? 'bg-red-600/80 line-through' : 'bg-black/30'
-                          }`}>
-                            {product.name} ({product.remaining})
-                          </span>
+                          <div 
+                            className={`${fontSize} font-extrabold text-left wrap-break-word flex-1 leading-tight ${
+                              isFinished && !isEmptySlot ? 'line-through opacity-50' : ''
+                            }`}
+                            style={{
+                              color: textColor,
+                              textShadow: '0 2px 4px rgba(0,0,0,0.4)',
+                              wordBreak: 'break-word',
+                              overflowWrap: 'break-word',
+                            }}
+                          >
+                            {isEmptySlot ? product.name : product.name}
+                          </div>
                         </div>
                       </div>
                     );
                   })}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Spin Button */}
-            <button 
-              onClick={handleSpin}
-              disabled={spinning || activeProducts.filter(p => p.remaining > 0).length === 0}
-              className={`
-                relative px-10 py-4 text-xl font-bold rounded-full shadow-2xl
-                transition-all duration-300 transform
-                ${spinning || activeProducts.filter(p => p.remaining > 0).length === 0
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-linear-to-r from-yellow-400 via-orange-500 to-red-500 hover:scale-110 hover:shadow-3xl cursor-pointer animate-pulse'
-                }
-                text-white uppercase tracking-wider
-              `}
-            >
-              {spinning ? (
-                <span className="flex items-center gap-3">
-                  <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Spinning...
-                </span>
-              ) : activeProducts.filter(p => p.remaining > 0).length === 0 ? (
-                'No Prizes Left'
-              ) : (
-                '🎲 SPIN NOW!'
-              )}
-            </button>
 
-            {/* Available Products Count */}
-            <div className="mt-8 bg-white/20 backdrop-blur-md px-6 py-3 rounded-xl text-white font-semibold">
-              🎁 {activeProducts.filter(p => p.remaining > 0).length} prizes available
-            </div>
+
           </div>
         )}
       </div>
@@ -203,10 +339,10 @@ export function Game() {
             <div className="text-center">
               <div className="text-7xl mb-4">😅</div>
               <h2 className="text-5xl font-extrabold text-white mb-4 drop-shadow-lg">
-                TRY AGAIN!
+                A la Prochaine
               </h2>
               <p className="text-2xl text-white/90 mb-6">
-                This prize is no longer available.
+                Maybe next spin will bring you a prize!
               </p>
               <button 
                 onClick={() => setShowTryAgain(false)}

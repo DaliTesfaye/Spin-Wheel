@@ -2,9 +2,16 @@ import { db } from './db';
 import type { Product } from './types';
 
 export async function getAllActiveProducts(): Promise<Product[]> {
-  return await db.products
+  const products = await db.products
     .filter(p => p.active)
     .toArray();
+  
+  // Sort by uniqueKey to ensure consistent order (1, 2, 3, 4, 5, 6, 7, 8)
+  return products.sort((a, b) => {
+    const numA = parseInt(a.uniqueKey);
+    const numB = parseInt(b.uniqueKey);
+    return numA - numB;
+  });
 }
 
 export async function getActiveProducts(): Promise<Product[]> {
@@ -14,26 +21,29 @@ export async function getActiveProducts(): Promise<Product[]> {
 }
 
 export async function spinWheel(): Promise<Product | null> {
-  // Only get products with remaining > 0 (available to win)
-  const activeProducts = await getActiveProducts();
+  // Get all active products (including empty slots)
+  const activeProducts = await getAllActiveProducts();
   
   if (activeProducts.length === 0) {
     return null; // No products available
   }
   
-  // Filter again in real-time to ensure no race conditions
+  // Filter products with remaining > 0
   const availableProducts = activeProducts.filter(p => p.remaining > 0);
   
   if (availableProducts.length === 0) {
     return null; // All products finished
   }
   
-  // Randomly select only from available products
+  // TEMPORARY: Simple random selection (no probability weighting)
   const randomIndex = Math.floor(Math.random() * availableProducts.length);
-  const winner = availableProducts[randomIndex];
+  const winner: Product = availableProducts[randomIndex];
   
-  // Decrease remaining quantity
-  if (winner.id) {
+  // Check if it's an empty slot (Try Again)
+  const isEmptySlot = winner.name.includes('Prochaine');
+  
+  // Decrease remaining quantity only for real prizes (not empty slots)
+  if (winner.id && !isEmptySlot) {
     await db.products.update(winner.id, {
       remaining: winner.remaining - 1
     });
@@ -46,5 +56,6 @@ export async function spinWheel(): Promise<Product | null> {
     });
   }
   
-  return winner;
+  // Return null for empty slots to trigger "Try Again" modal
+  return isEmptySlot ? null : winner;
 }
