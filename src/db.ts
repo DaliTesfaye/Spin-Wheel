@@ -58,6 +58,13 @@ export class SpinWheelDB extends Dexie {
         }
       });
     });
+
+    // Upgrade to version 5 to add 'remaining' to logs
+    this.version(5).stores({
+      products: '++id, uniqueKey, name, active, remaining, probability, displayCount',
+      logs: '++id, productId, date, remaining',
+      settings: 'key'
+    });
   }
 }
 

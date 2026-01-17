@@ -7,12 +7,12 @@ export interface Product {
   active: boolean;
   probability?: number;
 }
-
 export interface SpinLog {
   id?: number;
   productId: number;
   productName: string;
   date: Date;
+  remaining: number; // Stock after spin
 }
 
 export interface Setting {

@@ -4,11 +4,11 @@ import type { Product } from "./types";
 export const INITIAL_PRODUCTS: Omit<Product, "id">[] = [
   {
     uniqueKey: "1",
-    name: "Air Fryer",
+    name: "Friteuse",
     image: "/images/products/airfryer.png",
     remaining: 1,
     active: true,
-
+    probability: 5,
   },
   {
     uniqueKey: "2",
@@ -16,35 +16,39 @@ export const INITIAL_PRODUCTS: Omit<Product, "id">[] = [
     image:
       "https://imgs.search.brave.com/nsiGlyISticIptpic58hVto5HUTem6f76y5MqA_t5bE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9mYWls/ZWQtcmVkLXJ1YmJl/ci1zdGFtcC1vdmVy/LXdoaXRlLWJhY2tn/cm91bmQtODg0MTIz/MTQuanBn",
     remaining: 999999,
-    active: true
+    active: true,
+    probability: 10,
   },
-    {
+  {
     uniqueKey: "3",
-    name: "Frying Pan",
+    name: "Peole",
     image: "/images/products/frying.png",
     remaining: 50,
     active: true,
-
+    probability: 15,
   },
   {
     uniqueKey: "4",
-    name: "Magnet Jadida 1",
+    name: "Magnet",
     image: "/images/products/MAGNET JADIDA1.png",
     remaining: 50,
+    probability: 15,
     active: true,
-
   },
+
   {
     uniqueKey: "5",
-    name : "Magnet",
-    image: "/images/products/MAGNET JADIDA3.png",
-    remaining: 50,
+    probability: 15,
+    name: "Tablier De Cuisine",
+    image: "/images/products/TABLIER_jadida.png",
+    remaining: 30,
     active: true,
-
   },
+
   {
     uniqueKey: "6",
-    name : "Pince",
+    name: "Pince Friture",
+    probability: 15,
     image: "/images/products/pince.png",
     remaining: 20,
     active: true,
@@ -52,19 +56,18 @@ export const INITIAL_PRODUCTS: Omit<Product, "id">[] = [
   {
     uniqueKey: "7",
     name: "A la Prochaine",
-    image: "https://imgs.search.brave.com/nsiGlyISticIptpic58hVto5HUTem6f76y5MqA_t5bE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9mYWls/ZWQtcmVkLXJ1YmJl/ci1zdGFtcC1vdmVy/LXdoaXRlLWJhY2tn/cm91bmQtODg0MTIz/MTQuanBn",
+    probability: 10,
+    image:
+      "https://imgs.search.brave.com/nsiGlyISticIptpic58hVto5HUTem6f76y5MqA_t5bE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9mYWls/ZWQtcmVkLXJ1YmJl/ci1zdGFtcC1vdmVy/LXdoaXRlLWJhY2tn/cm91bmQtODg0MTIz/MTQuanBn",
     remaining: 999999,
     active: true,
-
-  } 
-  , 
+  },
   {
     uniqueKey: "8",
-    name : "Tablier",
-    image: "/images/products/TABLIER_jadida.png",
-    remaining: 30,
+    name: "Magnet",
+    image: "/images/products/MAGNET JADIDA3.png",
+    probability: 15,
+    remaining: 50,
     active: true,
-
-  }
-
+  },
 ];
