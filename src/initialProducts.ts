@@ -39,7 +39,7 @@ export const INITIAL_PRODUCTS: Omit<Product, "id">[] = [
   {
     uniqueKey: "5",
     probability: 15,
-    name: "Tablier De Cuisine",
+    name: "Tablier Cuisine",
     image: "/images/products/TABLIER_jadida.png",
     remaining: 30,
     active: true,
