@@ -181,7 +181,7 @@ export function Game() {
         ) : (
           <div className="flex flex-col items-center">
             {/* Wheel Container */}
-            <div className="relative mb-12">
+            <div className="relative mb-15">
               {/* Pointer */}
               <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-20">
                 <div className="w-0 h-0 border-l-30 border-r-30 border-t-50 border-l-transparent border-r-transparent border-black drop-shadow-xl animate-bounce"></div>
@@ -208,8 +208,8 @@ export function Game() {
                   <span
                     style={{
                       display: 'inline-block',
-                      width: 80,
-                      height: 80,
+                      width: 130,
+                      height: 130,
                       position: 'relative',
                     }}
                   >
@@ -218,8 +218,8 @@ export function Game() {
                       src="/2.png"
                       alt="Spin background"
                       style={{
-                        width: 80,
-                        height: 80,
+                        width: 130,
+                        height: 130,
                         objectFit: 'contain',
                         position: 'absolute',
                         left: 0,
@@ -233,8 +233,8 @@ export function Game() {
                       src="/jadida.png"
                       alt="Spin"
                       style={{
-                        width: 44,
-                        height: 24,
+                        width: 100,
+                        height: 60,
                         objectFit: 'contain',
                         zIndex: 2,
                         position: 'absolute',
@@ -249,7 +249,7 @@ export function Game() {
                 </button>
               </div>
               {/* Wheel */}
-              <div className="relative w-120 h-120 md:w-125 md:h-125">
+              <div className="relative w-170 h-170 md:w-160 md:h-160">
                 {/* Yellow outer border */}
                 <div className="absolute inset-0 rounded-full bg-yellow-400 shadow-2xl p-3">
                   {/* Red border */}
@@ -292,11 +292,11 @@ export function Game() {
                     const isYellowSegment = index % 2 === 0;
                     const textColor = isYellowSegment ? '#DC2626' : '#FFD700';
                     // Responsive distance and size
-                    const wheelRadius = window.innerWidth >= 768 ? 250 : 200;
-                    const distanceFromCenter = wheelRadius * 0.3;
+                    const wheelRadius = window.innerWidth >= 768 ? 300 : 200;
+                    const distanceFromCenter = wheelRadius * 0.3 ;
                     const productCount = activeProducts.length;
-                    const imageSize = productCount > 6 ? 'w-14 h-14' : productCount > 4 ? 'w-12 h-12' : 'w-14 h-14';
-                    const fontSize = productCount > 6 ? 'text-[14px]' : productCount > 4 ? 'text-[14px]' : 'text-[16px]';
+                    const imageSize = productCount > 6 ? 'w-24 h-24' : productCount > 4 ? 'w-12 h-12' : 'w-14 h-14';
+                    const fontSize = productCount > 6 ? 'text-[19px]' : productCount > 4 ? 'text-[14px]' : 'text-[16px]';
                     const isALaProchaine = product.name.toLowerCase().includes('prochaine');
                     return (
                       <div
@@ -307,31 +307,15 @@ export function Game() {
                           transformOrigin: '0 0',
                         }}
                       >
-                        <div 
+                        <div
                           className="flex flex-row items-center gap-2"
                           style={{
                             transform: `translateX(${distanceFromCenter}px) translateY(-50%)`,
-                            width: '120px',
+                            width: '180px', // Make the label use more of the segment width
+                            maxWidth: '220px',
                           }}
                         >
-                          {/* Only show image if not 'A la Prochaine' */}
-                          {!isALaProchaine && (
-                            <div className={`relative ${imageSize} shrink-0 overflow-hidden rounded bg-transparent`}>
-                              <img 
-                                src={product.image} 
-                                alt={product.name}
-                                className={`w-full h-full object-contain ${
-                                  isFinished ? 'opacity-40 grayscale' : ''
-                                }`}
-                              />
-                              {isFinished && !isEmptySlot && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded">
-                                  <span className="text-sm">🔒</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          <div 
+                          <div
                             className={`${fontSize} font-extrabold text-left wrap-break-word flex-1 leading-tight ${
                               isFinished && !isEmptySlot ? 'line-through opacity-50' : ''
                             }`}
@@ -344,6 +328,23 @@ export function Game() {
                           >
                             {isEmptySlot ? product.name : product.name}
                           </div>
+                          {/* Only show image if not 'A la Prochaine' */}
+                          {!isALaProchaine && (
+                            <div className={`relative ${imageSize} shrink-0 overflow-hidden rounded bg-transparent`}>
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                className={`w-full h-full object-contain ${
+                                  isFinished ? 'opacity-40 grayscale' : ''
+                                }`}
+                              />
+                              {isFinished && !isEmptySlot && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded">
+                                  <span className="text-sm">🔒</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
