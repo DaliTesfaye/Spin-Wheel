@@ -139,9 +139,9 @@ export function Game() {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-cover bg-center bg-no-repeat bg-fixed overflow-hidden " style={{ backgroundImage: "url('/MAGNET_JADIDA.png')" }}>
+    <div className="w-screen h-screen flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat bg-fixed overflow-hidden" style={{ backgroundImage: "url('/MAGNET_JADIDA.png')" }}>
       {/* Header */}
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full flex flex-col items-center justify-center">
         <div className="flex justify-between items-center mb-8">
           <div>
 
@@ -179,7 +179,7 @@ export function Game() {
             </Link>
           </div>
         ) : (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center justify-center w-full h-full">
             {/* Wheel Container */}
             <div className="relative mb-15">
               {/* Pointer */}

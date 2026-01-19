@@ -52,7 +52,8 @@ export async function spinWheel(): Promise<Product | null> {
     await db.logs.add({
       productId: winner.id,
       productName: winner.name,
-      date: new Date()
+      date: new Date(),
+      remaining : winner.remaining
     });
   }
   

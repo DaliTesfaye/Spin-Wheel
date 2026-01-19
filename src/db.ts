@@ -39,7 +39,8 @@ export class SpinWheelDB extends Dexie {
       // Generate uniqueKey for existing products based on name and index
       return tx.table('products').toCollection().modify((product, cursor) => {
         if (!product.uniqueKey) {
-          const index = cursor.key;
+          // Dexie cursor: use cursor.primaryKey for id
+          const index = cursor && ('primaryKey' in cursor) ? cursor.primaryKey : undefined;
           product.uniqueKey = `product-${index}`;
         }
       });
