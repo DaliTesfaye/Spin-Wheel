@@ -1,9 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { getAllActiveProducts } from "../spin";
 import type { Product } from "../types";
 
 export function Game() {
+  const navigate = useNavigate();
+  const clickCount = useRef(0);
+  const clickTimer = useRef<number | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [winner, setWinner] = useState<Product | null>(null);
   const [showTryAgain, setShowTryAgain] = useState(false);
@@ -138,20 +142,38 @@ export function Game() {
     }, 3000);
   }
 
+  // Five-click handler
+  function handleScreenClick() {
+    clickCount.current += 1;
+    if (clickTimer.current) window.clearTimeout(clickTimer.current);
+    if (clickCount.current === 5) {
+      clickCount.current = 0;
+      navigate('/admin');
+      return;
+    }
+    clickTimer.current = window.setTimeout(() => {
+      clickCount.current = 0;
+    }, 700); // 700ms window for 5 clicks
+  }
+
   return (
-    <div className="w-screen h-screen flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat bg-fixed overflow-hidden" style={{ backgroundImage: "url('/MAGNET_JADIDA2.png')" }}>
+    <div
+      className="w-screen h-screen flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat bg-fixed overflow-hidden"
+      style={{ backgroundImage: "url('/MAGNET_JADIDA.png')" }}
+      onClick={handleScreenClick}
+    >
       {/* Header */}
       <div className="w-full flex flex-col items-center justify-center">
         <div className="flex justify-between items-center mb-8">
           <div>
 
           </div>
-          <Link 
+          {/* <Link 
             to="/admin" 
             className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border border-white/30"
           >
             ⚙️
-          </Link>
+          </Link> */}
         </div>
 
         {activeProducts.length === 0 ? (
