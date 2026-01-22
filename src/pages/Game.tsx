@@ -273,9 +273,9 @@ export function Game() {
               {/* Wheel */}
               <div className="relative w-170 h-170 md:w-160 md:h-160">
                 {/* Yellow outer border */}
-                <div className="absolute inset-0 rounded-full bg-yellow-400 shadow-2xl p-3">
+                <div className="absolute inset-0 rounded-full" style={{background: '#FED029', padding: '0.75rem'}}>
                   {/* Red border */}
-                  <div className="w-full h-full rounded-full bg-[#FF3B3B] p-3">
+                  <div className="w-full h-full rounded-full" style={{background: '#EC2028', padding: '0.75rem'}}>
                     {/* White thin inner border */}
                     <div className="w-full h-full rounded-full bg-white p-0.5">
                       <div 
@@ -283,12 +283,12 @@ export function Game() {
                         style={{ 
                           transform: `rotate(${rotation}deg)`,
                           background: activeProducts.length > 0 ? `conic-gradient(from -112.5deg, ${activeProducts.map((_, i) => {
-                            const color = i % 2 === 0 ? '#FFD700' : '#FF3B3B';
+                            const color = i % 2 === 0 ? '#FED029' : '#EC2028';
                             const segmentAngle = 360 / activeProducts.length;
                             const startAngle = i * segmentAngle;
                             const endAngle = (i + 1) * segmentAngle;
                             return `${color} ${startAngle}deg, ${color} ${endAngle}deg`;
-                          }).join(', ')})` : '#FFD700'
+                          }).join(', ')})` : '#FED029'
                         }}
                       >
                         {/* White divider lines between segments */}
@@ -312,7 +312,7 @@ export function Game() {
                     const isFinished = product.remaining === 0;
                     const isEmptySlot = product.name.startsWith('❌');
                     const isYellowSegment = index % 2 === 0;
-                    const textColor = isYellowSegment ? '#DC2626' : '#FFD700';
+                    const textColor = isYellowSegment ? '#EC2028' : '#FED029';
                     // Responsive distance and size
                     const wheelRadius = window.innerWidth >= 768 ? 300 : 200;
                     const distanceFromCenter = wheelRadius * 0.3 ;
@@ -394,13 +394,13 @@ export function Game() {
                 A la Prochaine
               </h2>
               <p className="text-2xl text-white/90 mb-6">
-                Maybe next spin will bring you a prize!
+                A la prochaine fois !!
               </p>
               <button 
                 onClick={() => setShowTryAgain(false)}
                 className="bg-white text-red-600 px-12 py-4 rounded-full font-bold text-xl hover:bg-red-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                Better luck Next Time !!
+                Next
               </button>
             </div>
           </div>
@@ -421,7 +421,7 @@ export function Game() {
             <div className="relative text-center">
               <div className="text-5xl mb-4 animate-bounce">🎉</div>
               <h2 className="text-4xl font-extrabold text-white mb-4 drop-shadow-lg">
-                CONGRATULATIONS!
+                Felicitations!
               </h2>
               <div className="bg-white rounded-2xl p-6 my-6 shadow-xl">
                 <img 
@@ -431,13 +431,13 @@ export function Game() {
                 />
               </div>
               <h3 className="text-3xl font-bold text-white mb-6 drop-shadow-md">
-                You won: {winner.name}!
+                Cadeau Gagnée: {winner.name}!
               </h3>
               <button 
                 onClick={() => setWinner(null)}
                 className="bg-white text-orange-600 px-12 py-4 rounded-full font-bold text-xl hover:bg-orange-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                Claim Prize 🎁
+                Claim Cadeau 
               </button>
             </div>
           </div>
