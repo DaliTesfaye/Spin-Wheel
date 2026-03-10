@@ -158,8 +158,15 @@ export function Game() {
 
   return (
     <div
-      className="w-screen h-screen flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat bg-fixed overflow-hidden"
-      style={{ backgroundImage: "url('/MAGNET_JADIDA2.png')" }}
+      className="w-screen flex flex-col items-center justify-center overflow-hidden"
+      style={{
+        backgroundImage: "url('/jadida-background.png')",
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center center',
+        height: '100dvh',
+        minHeight: '100dvh',
+      }}
       onClick={handleScreenClick}
     >
       {/* Header */}
