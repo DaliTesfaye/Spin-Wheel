@@ -12,7 +12,7 @@ export const INITIAL_PRODUCTS: Omit<Product, "id">[] = [
   },
   {
     uniqueKey: "2",
-    name: "Produit Jadida",
+    name: "Produits Jadida",
     image: "/images/products/mayonnaise.jpg",
     remaining: 50,
     active: true,
