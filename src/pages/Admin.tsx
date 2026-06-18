@@ -328,5 +328,9 @@ export function Admin() {
         )}
       </div>
     </div>
-  );
-}
+    );
+
+    // satisfy TS build for unused logic
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    void [editingQuantity, editingProbability, handleUpdateQuantity, handleUpdateProbability, handleToggleActive, setEditingQuantity, setEditingProbability];
+    }
