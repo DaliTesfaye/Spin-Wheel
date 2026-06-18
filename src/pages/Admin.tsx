@@ -9,6 +9,8 @@ export function Admin() {
   const [products, setProducts] = useState<Product[]>([]);
   const [logs, setLogs] = useState<SpinLog[]>([]);
   const [activeTab, setActiveTab] = useState<"products" | "logs">("products");
+  
+  // Logique conservée pour le PFE
   const [editingQuantity, setEditingQuantity] = useState<{
     id: number;
     value: number;
@@ -47,6 +49,7 @@ export function Admin() {
     setLogs(allLogs);
   }
 
+  // Logique de mise à jour conservée sous le capot
   async function handleUpdateQuantity(id: number, newQuantity: number) {
     if (newQuantity < 0) return;
     await db.products.update(id, { remaining: newQuantity });
@@ -168,7 +171,6 @@ export function Admin() {
               </button>
             </div>
 
-            {/* Products Grid */}
             {products.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
                 <div className="text-4xl md:text-6xl mb-4">📦</div>
@@ -194,7 +196,7 @@ export function Admin() {
                         alt={product.name}
                         className="max-h-32 md:max-h-40 lg:max-h-48 max-w-full object-contain p-3 md:p-4"
                       />
-                      <button
+                      {/* <button
                         onClick={() =>
                           handleToggleActive(product.id!, product.active)
                         }
@@ -205,130 +207,35 @@ export function Admin() {
                         }`}
                       >
                         {product.active ? "✓ Active" : "✗ Inactive"}
-                      </button>
+                      </button> */}
                     </div>
                     <div className="p-4 md:p-6">
                       <h3 className="text-base md:text-lg lg:text-xl font-bold text-gray-800 mb-3 md:mb-4 line-clamp-2">
                         {product.name}
                       </h3>
 
-                      {/* Quantity Management */}
+                      {/* Quantity Display (Static UI - No Input Forms or Edit triggers) */}
                       <div className="mb-3 md:mb-4">
                         <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
                           Remaining Quantity
                         </label>
-                        {editingQuantity?.id === product.id &&
-                        editingQuantity ? (
-                          <div className="flex gap-2">
-                            <input
-                              type="number"
-                              min="0"
-                              value={editingQuantity.value}
-                              onChange={(e) =>
-                                setEditingQuantity({
-                                  id: product.id!,
-                                  value: Number(e.target.value),
-                                })
-                              }
-                              className="flex-1 px-2 md:px-3 py-1 md:py-2 text-sm md:text-base border-2 border-purple-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-                              autoFocus
-                            />
-                            <button
-                              onClick={() =>
-                                handleUpdateQuantity(
-                                  product.id!,
-                                  editingQuantity.value
-                                )
-                              }
-                              className="px-3 md:px-4 py-1 md:py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-all text-sm md:text-base"
-                            >
-                              ✓
-                            </button>
-                            <button
-                              onClick={() => setEditingQuantity(null)}
-                              className="px-3 md:px-4 py-1 md:py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-semibold transition-all text-sm md:text-base"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ) : (
-                          <div
-                            className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-linear-to-r from-purple-100 to-pink-100 rounded-lg cursor-pointer hover:from-purple-200 hover:to-pink-200 transition-all"
-                            onClick={() =>
-                              setEditingQuantity({
-                                id: product.id!,
-                                value: product.remaining,
-                              })
-                            }
-                          >
-                            <span className="text-2xl md:text-3xl font-bold text-purple-600">
-                              {product.remaining}
-                            </span>
-                            <button className="text-xs md:text-sm text-purple-600 hover:text-purple-800 font-semibold">
-                              ✏️ Edit
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-linear-to-r from-purple-100 to-pink-100 rounded-lg">
+                          <span className="text-2xl md:text-3xl font-bold text-purple-600">
+                            {product.remaining}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Probability Management */}
+                      {/* Probability Display (Static UI - No Input Forms or Edit triggers) */}
                       <div className="mb-3 md:mb-4">
                         <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
                           Probability (%)
                         </label>
-                        {editingProbability?.id === product.id &&
-                        editingProbability ? (
-                          <div className="flex gap-2">
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={editingProbability.value}
-                              onChange={(e) =>
-                                setEditingProbability({
-                                  id: product.id!,
-                                  value: Number(e.target.value),
-                                })
-                              }
-                              className="flex-1 px-2 md:px-3 py-1 md:py-2 text-sm md:text-base border-2 border-pink-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
-                              autoFocus
-                            />
-                            <button
-                              onClick={() =>
-                                handleUpdateProbability(
-                                  product.id!,
-                                  editingProbability.value
-                                )
-                              }
-                              className="px-3 md:px-4 py-1 md:py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-all text-sm md:text-base"
-                            >
-                              ✓
-                            </button>
-                            <button
-                              onClick={() => setEditingProbability(null)}
-                              className="px-3 md:px-4 py-1 md:py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-semibold transition-all text-sm md:text-base"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ) : (
-                          <div
-                            className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-linear-to-r from-pink-100 to-purple-100 rounded-lg cursor-pointer hover:from-pink-200 hover:to-purple-200 transition-all"
-                            onClick={() =>
-                              setEditingProbability({
-                                id: product.id!,
-                                value: product.probability ?? 0,
-                              })
-                            }
-                          >
-                            <span className="text-xl md:text-2xl font-bold text-pink-600">
-                              {product.probability?.toFixed(2) ?? "0.00"}%
-                            </span>
-                            <button className="text-xs md:text-sm text-pink-600 hover:text-pink-800 font-semibold">
-                              ✏️ Edit
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-linear-to-r from-pink-100 to-purple-100 rounded-lg">
+                          <span className="text-xl md:text-2xl font-bold text-pink-600">
+                            {product.probability?.toFixed(2) ?? "0.00"}%
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
