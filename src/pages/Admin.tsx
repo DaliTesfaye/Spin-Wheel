@@ -187,7 +187,7 @@ export function Admin() {
                   <div
                     key={product.id}
                     className={`bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 ${
-                      product.active ? "border-green-300" : "border-gray-300"
+                      product.active ? "border-green-400" : "border-gray-300"
                     }`}
                   >
                     <div className="relative h-40 md:h-48 lg:h-56 bg-linear-to-br from-purple-100 to-pink-100 flex items-center justify-center">
